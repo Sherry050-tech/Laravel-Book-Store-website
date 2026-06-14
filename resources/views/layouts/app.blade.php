@@ -53,6 +53,41 @@
         /* FOOTER */
         footer { background: #111; color: #888; text-align: center; padding: 24px; font-size: 13px; margin-top: 60px; }
         footer span { color: #e8c97e; }
+
+        /* PAGINATION OVERRIDE */
+        ul.pagination {
+            display: flex;
+            justify-content: center;
+            list-style: none;
+            padding: 0;
+            margin: 3rem 0;
+        }
+        ul.pagination .page-item .page-link {
+            color: #4a5568;
+            background-color: #ffffff;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            margin: 0 0.25rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        ul.pagination .page-item:not(.active) .page-link:hover {
+            background-color: #f7fafc;
+            color: #111;
+        }
+        ul.pagination .active .page-link {
+            color: #111;
+            background-color: #e8c97e; /* Bookstore Gold */
+            border-color: #e8c97e;
+            pointer-events: none;
+        }
+        ul.pagination .disabled .page-link {
+            color: #a0aec0;
+            background-color: #edf2f7;
+            pointer-events: none;
+        }
     </style>
     @stack('styles')
 </head>

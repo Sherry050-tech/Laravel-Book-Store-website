@@ -1,3 +1,46 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+/* resources/css/app.css */
+
+/* Target the container for pagination */
+.pagination {
+    display: flex; /* Arrange horizontally */
+    justify-content: center; /* Center horizontally */
+    list-style: none; /* Remove default list bullets */
+    padding: 0; /* Remove default padding */
+    margin: 2rem 0; /* Add top/bottom spacing */
+    background: none !important; /* Forces the black background off */
+}
+
+/* Style the links and inactive numbers */
+.pagination a,
+.pagination .page-link {
+    color: #4a5568; /* Use a dark gray, not pure blue */
+    text-decoration: none; /* Remove underlines */
+    padding: 0.75rem 1.25rem; /* Add consistent padding */
+    border: 1px solid #e2e8f0; /* Subtle border */
+    border-radius: 9999px; /* Make them pill-shaped */
+    transition: background-color 0.2s; /* Smooth hover effect */
+    margin: 0 0.25rem; /* Small gap between buttons */
+}
+
+/* Hover state for links */
+.pagination a:hover,
+.pagination .page-link:hover {
+    background-color: #edf2f7; /* Very light gray on hover */
+}
+
+/* Style the current/active page */
+.pagination .active .page-link {
+    color: #ffffff; /* White text */
+    background-color: #3182ce; /* Theme primary blue */
+    border-color: #3182ce; /* Match border color */
+    pointer-events: none; /* Prevent clicking the active page */
+}
+
+/* Style the "Previous" and "Next" text/icons */
+.pagination a[rel="prev"],
+.pagination a[rel="next"] {
+    font-weight: 600; /* Bold Previous/Next */
+}
