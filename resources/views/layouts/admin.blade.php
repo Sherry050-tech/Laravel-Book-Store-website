@@ -119,6 +119,9 @@
         <a href="{{ route('admin.users.index') }}" class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
             <i class="fas fa-users"></i> Users
         </a>
+        <a href="{{ route('admin.feedbacks.index') }}" class="nav-item {{ request()->routeIs('admin.feedbacks.*') ? 'active' : '' }}">
+            <i class="fas fa-star"></i> Feedback
+        </a>
         <a href="{{ route('books.index') }}" class="nav-item">
             <i class="fas fa-store"></i> View Store
         </a>

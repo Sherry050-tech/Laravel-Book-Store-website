@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\BookController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\FeedbackController; // ⬅️ ADDED THIS
 use Illuminate\Support\Facades\Route;
 
 // ── Public Routes ─────────────────────────────────────────────
@@ -35,6 +36,9 @@ Route::middleware(['auth', 'user'])->group(function () {
     // Profile
     Route::get('/profile', [OrderController::class, 'profile'])->name('profile');
     Route::patch('/profile', [OrderController::class, 'updateProfile'])->name('profile.update');
+
+    // Feedback (User Side) ⬅️ ADDED THIS
+    Route::post('/feedback', [FeedbackController::class, 'store'])->name('feedback.store');
 });
 
 // ── Admin Routes ──────────────────────────────────────────────
@@ -55,4 +59,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/users/{user}', [AdminUserController::class, 'show'])->name('users.show');
     Route::patch('/users/{user}/toggle', [AdminUserController::class, 'toggle'])->name('users.toggle');
     Route::delete('/users/{user}', [AdminUserController::class, 'destroy'])->name('users.destroy');
+
+    // Feedbacks (Admin Side) ⬅️ ADDED THIS
+    // Note: 'admin/' prefix and 'admin.' name are automatically added by the group!
+    Route::get('/feedbacks', [FeedbackController::class, 'indexAdmin'])->name('feedbacks.index');
 });

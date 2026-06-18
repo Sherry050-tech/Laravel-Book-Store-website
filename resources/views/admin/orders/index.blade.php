@@ -2,73 +2,62 @@
 
 @section('content')
 <div class="topbar">
-    <h1>All Orders</h1>
-    <form method="GET" style="display:flex;gap:8px;">
-        <select name="status" class="form-control" style="width:160px;" onchange="this.form.submit()">
-            <option value="">All Status</option>
-            @foreach(['pending','confirmed','shipped','delivered','cancelled'] as $s)
-            <option value="{{ $s }}" {{ request('status')==$s ? 'selected':'' }}>{{ ucfirst($s) }}</option>
-            @endforeach
-        </select>
-    </form>
+    <h1>Manage Orders</h1>
 </div>
 
 <div class="panel">
-    <table>
-        <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
-        <tbody>
-        @forelse($orders as $order)
-        <tr>
-            <td><strong>#{{ $order->id }}</strong></td>
-            <td>{{ $order->customer_name }}<br><small style="color:#9ca3af">{{ $order->customer_email }}</small></td>
-            <td><strong>${{ number_format($order->total,2) }}</strong></td>
-            <td><span class="badge badge-gray">{{ strtoupper($order->payment_method) }}</span></td>
-            <td>
-                <select class="form-control" style="width:130px;padding:4px 8px;font-size:12px;" onchange="updateStatus({{ $order->id }}, this.value)">
-                    @foreach(['pending','confirmed','shipped','delivered','cancelled'] as $s)
-                    <option value="{{ $s }}" {{ $order->status==$s ? 'selected':'' }}>{{ ucfirst($s) }}</option>
-                    @endforeach
-                </select>
-            </td>
-            <td style="font-size:13px;color:#9ca3af">{{ $order->created_at->format('M d, Y') }}</td>
-            <td>
-                <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
-                <form method="POST" action="{{ route('admin.orders.destroy', $order) }}" style="display:inline" onsubmit="return confirm('Delete this order?')">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                </form>
-            </td>
-        </tr>
-        @empty
-        <tr><td colspan="7" style="text-align:center;padding:40px;color:#aaa;">No orders found</td></tr>
-        @endforelse
-        </tbody>
-    </table>
-    <div style="padding:16px 20px;">{{ $orders->links() }}</div>
+    <div class="panel-body" style="padding: 0;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f1f1; border-bottom: 2px solid #ccc;">
+                    <th style="padding: 12px 20px;">Order ID</th>
+                    <th style="padding: 12px 20px;">Customer</th>
+                    <th style="padding: 12px 20px;">Total</th>
+                    <th style="padding: 12px 20px;">Status</th>
+                    <th style="padding: 12px 20px;">Date</th>
+                    <th style="padding: 12px 20px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($orders as $order)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 20px;"><strong>#{{ $order->id }}</strong></td>
+                    <td style="padding: 12px 20px;">
+                        <strong>{{ $order->user->name ?? 'Guest User' }}</strong><br>
+                        <span style="color: #666; font-size: 13px;">{{ $order->user->email ?? '' }}</span>
+                    </td>
+                    <td style="padding: 12px 20px;">${{ number_format($order->total, 2) }}</td>
+                    <td style="padding: 12px 20px;">
+                        <span class="badge badge-{{ $order->status === 'pending' ? 'yellow' : ($order->status === 'confirmed' ? 'blue' : ($order->status === 'shipped' ? 'purple' : ($order->status === 'delivered' ? 'green' : 'red'))) }}">
+                            {{ ucfirst($order->status) }}
+                        </span>
+                    </td>
+                    <td style="padding: 12px 20px; color: #666; font-size: 13px;">{{ $order->created_at->format('M d, Y') }}</td>
+                    <td style="padding: 12px 20px; display: flex; gap: 8px; align-items: center;">
+                        <a href="{{ route('admin.orders.show', $order) }}" class="btn btn-sm btn-outline">View</a>
+                        
+                        <form action="{{ route('admin.orders.status', $order) }}" method="POST" style="display:flex; gap:4px; margin:0;">
+                            @csrf 
+                            @method('PATCH')
+                            <select name="status" class="form-control" style="padding: 4px; height: auto; min-width: 100px;" onchange="this.form.submit()">
+                                <option value="pending" {{ $order->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="confirmed" {{ $order->status == 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="shipped" {{ $order->status == 'shipped' ? 'selected' : '' }}>Shipped</option>
+                                <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Delivered</option>
+                                <option value="cancelled" {{ $order->status == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="6" style="padding: 40px; text-align: center; color: #888;">
+                        No orders have been placed yet.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
-
-@push('scripts')
-<script>
-function updateStatus(id, status) {
-    fetch(`/admin/orders/${id}/status`, {
-        method: 'PATCH',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-        },
-        body: JSON.stringify({ status })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const flash = document.createElement('div');
-            flash.className = 'flash flash-success';
-            flash.textContent = '✅ Order #' + id + ' status updated to ' + status;
-            document.querySelector('.main').prepend(flash);
-            setTimeout(() => flash.remove(), 3000);
-        }
-    });
-}
-</script>
-@endpush

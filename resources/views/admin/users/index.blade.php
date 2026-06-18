@@ -2,44 +2,65 @@
 
 @section('content')
 <div class="topbar">
-    <h1>All Users</h1>
+    <h1>Manage Users</h1>
 </div>
 
 <div class="panel">
-    <table>
-        <thead><tr><th>Name</th><th>Email</th><th>Phone</th><th>Orders</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
-        <tbody>
-        @forelse($users as $user)
-        <tr>
-            <td><strong>{{ $user->name }}</strong></td>
-            <td>{{ $user->email }}</td>
-            <td>{{ $user->phone ?: '—' }}</td>
-            <td><span class="badge badge-blue">{{ $user->orders_count ?? $user->orders()->count() }}</span></td>
-            <td style="font-size:13px;color:#9ca3af">{{ $user->created_at->format('M d, Y') }}</td>
-            <td>
-                <span class="badge {{ $user->is_active ? 'badge-green' : 'badge-red' }}">
-                    {{ $user->is_active ? 'Active' : 'Blocked' }}
-                </span>
-            </td>
-            <td>
-                <a href="{{ route('admin.users.show', $user) }}" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
-                <form method="POST" action="{{ route('admin.users.toggle', $user) }}" style="display:inline">
-                    @csrf @method('PATCH')
-                    <button class="btn btn-sm {{ $user->is_active ? 'btn-danger' : 'btn-gold' }}">
-                        {{ $user->is_active ? 'Block' : 'Unblock' }}
-                    </button>
-                </form>
-                <form method="POST" action="{{ route('admin.users.destroy', $user) }}" style="display:inline" onsubmit="return confirm('Delete this user?')">
-                    @csrf @method('DELETE')
-                    <button class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
-                </form>
-            </td>
-        </tr>
-        @empty
-        <tr><td colspan="7" style="text-align:center;padding:40px;color:#aaa;">No users found</td></tr>
-        @endforelse
-        </tbody>
-    </table>
-    <div style="padding:16px 20px;">{{ $users->links() }}</div>
+    <div class="panel-body" style="padding: 0;">
+        <table style="width: 100%; text-align: left; border-collapse: collapse;">
+            <thead>
+                <tr style="background: #f1f1f1; border-bottom: 2px solid #ccc;">
+                    <th style="padding: 12px 20px;">ID</th>
+                    <th style="padding: 12px 20px;">User Details</th>
+                    <th style="padding: 12px 20px;">Role</th>
+                    <th style="padding: 12px 20px;">Joined</th>
+                    <th style="padding: 12px 20px;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($users as $user)
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 12px 20px; color: #666;">#{{ $user->id }}</td>
+                    <td style="padding: 12px 20px;">
+                        <strong>{{ $user->name }}</strong><br>
+                        <span style="color: #666; font-size: 13px;">{{ $user->email }}</span>
+                    </td>
+                    <td style="padding: 12px 20px;">
+                        @if($user->role === 'admin')
+                            <span class="badge badge-purple">Admin</span>
+                        @else
+                            <span class="badge badge-gray">Customer</span>
+                        @endif
+                    </td>
+                    <td style="padding: 12px 20px; color: #666; font-size: 13px;">{{ $user->created_at->format('M d, Y') }}</td>
+                    <td style="padding: 12px 20px; display: flex; gap: 8px;">
+                        
+                        <form action="{{ route('admin.users.toggle', $user) }}" method="POST">
+                            @csrf 
+                            @method('PATCH')
+                            <button type="submit" class="btn btn-sm btn-outline">
+                                Make {{ $user->role === 'admin' ? 'Customer' : 'Admin' }}
+                            </button>
+                        </form>
+
+                        @if(auth()->id() !== $user->id)
+                        <form action="{{ route('admin.users.destroy', $user) }}" method="POST" onsubmit="return confirm('Are you sure you want to permanently delete this user?');">
+                            @csrf 
+                            @method('DELETE')
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                        @endif
+                    </td>
+                </tr>
+                @empty
+                <tr>
+                    <td colspan="5" style="padding: 40px; text-align: center; color: #888;">
+                        No users registered yet.
+                    </td>
+                </tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 @endsection
