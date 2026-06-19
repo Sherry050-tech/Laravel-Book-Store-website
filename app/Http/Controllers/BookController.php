@@ -1,8 +1,10 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Book;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class BookController extends Controller
 {
@@ -13,7 +15,31 @@ class BookController extends Controller
         $topRated    = Book::active()->category('top_rated')->take(4)->get();
         $popular     = Book::active()->category('popular')->take(4)->get();
 
-        return view('home', compact('bestsellers', 'newReleases', 'topRated', 'popular'));
+        $recommendations = [];
+
+        // If the user is logged in, grab their personalized feed for the homepage
+        if (auth()->check()) {
+            try {
+                $lastOrder = auth()->user()->orders()->latest()->first();
+                if ($lastOrder && $lastOrder->items->count() > 0) {
+                    $favoriteBookTitle = $lastOrder->items->first()->book->title ?? null;
+                    
+                    if ($favoriteBookTitle) {
+                        $response = Http::timeout(2)->get('http://127.0.0.1:5000/recommend', [
+                            'title' => $favoriteBookTitle
+                        ]);
+
+                        if ($response->successful()) {
+                            $recommendations = $response->json();
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                $recommendations = [];
+            }
+        }
+
+        return view('home', compact('bestsellers', 'newReleases', 'topRated', 'popular', 'recommendations'));
     }
 
     public function index(Request $request)
@@ -37,13 +63,54 @@ class BookController extends Controller
 
     public function show(Book $book)
     {
-        return view('books.show', compact('book'));
+        $recommendations = [];
+
+        try {
+            $response = Http::timeout(2)->get('http://127.0.0.1:5000/recommend', [
+                'title' => $book->title
+            ]);
+
+            if ($response->successful()) {
+                $recommendations = $response->json();
+            }
+        } catch (\Exception $e) {
+            $recommendations = [];
+        }
+
+        return view('books.show', compact('book', 'recommendations'));
     }
 
     public function dashboard()
     {
         $orders = auth()->user()->orders()->latest()->take(5)->get();
         $cartCount = auth()->user()->cartItems()->count();
-        return view('user.dashboard', compact('orders', 'cartCount'));
+
+        $personalRecommendations = [];
+        $lastOrder = auth()->user()->orders()->latest()->first();
+        $favoriteBookTitle = null;
+
+        try {
+            if ($lastOrder && $lastOrder->items->count() > 0) {
+                $favoriteBookTitle = $lastOrder->items->first()->book->title ?? null;
+            }
+        } catch (\Exception $e) {
+            $favoriteBookTitle = null; 
+        }
+
+        if ($favoriteBookTitle) {
+            try {
+                $response = Http::timeout(2)->get('http://127.0.0.1:5000/recommend', [
+                    'title' => $favoriteBookTitle
+                ]);
+
+                if ($response->successful()) {
+                    $personalRecommendations = $response->json();
+                }
+            } catch (\Exception $e) {
+                $personalRecommendations = [];
+            }
+        }
+
+        return view('user.dashboard', compact('orders', 'cartCount', 'personalRecommendations'));
     }
 }

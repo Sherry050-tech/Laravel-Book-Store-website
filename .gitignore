@@ -25,3 +25,12 @@ _ide_helper.php
 Homestead.json
 Homestead.yaml
 Thumbs.db
+# Python ML Engine
+/ml_engine/venv/
+/ml_engine/__pycache__/
+*.pyc
+
+# Laravel / Node
+/vendor/
+node_modules/
+.env

@@ -17,6 +17,18 @@
     .btn-large { padding:14px 32px; font-size:16px; font-weight:600; border-radius:10px; border:none; cursor:pointer; text-decoration:none; display:inline-block; }
     .btn-cart { background:#111; color:#fff; }
     .btn-cart:hover { background:#333; }
+
+    @media (max-width: 768px) {
+        .book-detail {
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+        .book-img {
+            max-width: 300px;
+            margin: 0 auto;
+            display: block;
+        }
+    }
 </style>
 @endpush
 
@@ -32,10 +44,14 @@
         <span class="book-badge">{{ ucfirst(str_replace('_',' ',$book->category)) }}</span>
         <h1>{{ $book->title }}</h1>
         <p class="author">by {{ $book->author }}</p>
+        
         <div class="stars">
-            @for($i=1;$i<=5;$i++)@if($i<=$book->rating)★@else☆@endif@endfor
+            @for($i = 1; $i <= 5; $i++)
+                @if($i <= $book->rating) ★ @else ☆ @endif
+            @endfor
             <span style="color:#888;font-size:14px;">({{ $book->rating }}/5)</span>
         </div>
+        
         <p class="book-price">${{ number_format($book->price, 2) }}</p>
         <p class="book-desc">{{ $book->description ?: 'No description available.' }}</p>
 
@@ -63,5 +79,28 @@
         @endauth
     </div>
 </div>
+
+@if(!empty($recommendations))
+    <div style="max-width:900px; margin: 40px auto; padding: 24px; border-top: 2px solid #eee;">
+        <h3 style="font-size: 22px; font-weight: 800; margin-bottom: 20px;">
+            Similar Books
+        </h3>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px;">
+            @foreach($recommendations as $rec)
+                <a href="{{ route('books.show', $rec['id']) }}" style="text-decoration: none; color: inherit;">
+                    <div style="background: #fff; padding: 20px; border-radius: 12px; border: 1px solid #eaeaea; box-shadow: 0 4px 6px rgba(0,0,0,0.02); transition: transform 0.2s; cursor: pointer;" onmouseover="this.style.transform='translateY(-4px)'" onmouseout="this.style.transform='translateY(0)'">
+                        <h4 style="font-size: 16px; font-weight: 700; margin-bottom: 8px; color: #111;">
+                            {{ $rec['title'] }}
+                        </h4>
+                        <p style="color: #666; font-size: 14px; margin-bottom: 0;">
+                            By {{ $rec['author'] }}
+                        </p>
+                    </div>
+                </a>
+            @endforeach
+        </div>
+    </div>
+@endif
 
 @endsection
